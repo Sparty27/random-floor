@@ -3,6 +3,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
+local LOG = "[GuiController]"
+
 local player = Players.LocalPlayer
 local gui = player.PlayerGui:WaitForChild("GameGui")
 local topBar = gui:WaitForChild("TopBar")
@@ -30,10 +32,12 @@ updateGui.OnClientEvent:Connect(function(message)
 end)
 
 showWinner.OnClientEvent:Connect(function(winnerName)
+	print(LOG, "showWinner received:", winnerName)
 	if winnerName == "Нічия!" then
 		winText.Text = "🤝 Draw! Everyone fell!"
 		winText.TextColor3 = Color3.fromRGB(255, 255, 255)
 	elseif winnerName == player.Name then
+		print(LOG, "Local player won!")
 		winText.Text = "🏆 You win!"
 		winText.TextColor3 = Color3.fromRGB(255, 215, 0)
 	else

@@ -3,6 +3,8 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 
+local LOG = "[Spectator]"
+
 local SPECTATOR_CF = CFrame.lookAt(Vector3.new(0, 80, 90), Vector3.new(0, 15, 0))
 
 local watchingArena = false
@@ -56,6 +58,7 @@ corner.Parent = toggleBtn
 -- ── Логіка ───────────────────────────────────────────────────────────────────
 
 local function enterArenaView()
+	print(LOG, "Entering arena spectate view")
 	watchingArena = true
 	camera.CameraType = Enum.CameraType.Scriptable
 	camera.CFrame = SPECTATOR_CF
@@ -64,6 +67,7 @@ local function enterArenaView()
 end
 
 local function exitArenaView()
+	print(LOG, "Exiting arena view, returning to custom camera")
 	watchingArena = false
 	camera.CameraType = Enum.CameraType.Custom
 	statusLabel.Text = "💀 You were eliminated"
@@ -80,6 +84,7 @@ end)
 
 local function onIsSpectatingChanged()
 	local isSpectating = player:GetAttribute("IsSpectating")
+	print(LOG, "IsSpectating changed to:", isSpectating)
 
 	if isSpectating then
 		screenGui.Enabled = true

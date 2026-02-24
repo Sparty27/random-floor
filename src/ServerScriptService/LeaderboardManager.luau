@@ -6,28 +6,33 @@ local PlayersService = game:GetService("Players")
 
 local winsStore = DataStoreService:GetOrderedDataStore("PlayerWins_v1")
 
+local LOG = "[Leaderboard]"
+
 -- Додаємо перемогу гравцю
 function LeaderboardManager.addWin(player)
+	print(LOG, "Saving win for", player.Name, "(UserId:", player.UserId, ")")
 	local userId = tonumber(player.UserId)
 	local success, result = pcall(function()
 		return winsStore:IncrementAsync(userId, 1)
 	end)
 	if success then
+		print(LOG, player.Name, "now has", result, "wins")
 		return result
 	else
-		warn("Помилка збереження перемоги: " .. tostring(result))
+		warn(LOG, "Failed to save win for", player.Name, ":", tostring(result))
 		return nil
 	end
 end
 
 -- Отримуємо топ 20 гравців
 function LeaderboardManager.getTopPlayers()
+	print(LOG, "Fetching top 20 players...")
 	local success, pages = pcall(function()
 		return winsStore:GetSortedAsync(false, 20)
 	end)
 
 	if not success then
-		warn("Помилка GetSortedAsync: " .. tostring(pages))
+		warn(LOG, "Failed GetSortedAsync:", tostring(pages))
 		return {}
 	end
 
@@ -48,6 +53,7 @@ function LeaderboardManager.getTopPlayers()
 		})
 	end
 
+	print(LOG, "Loaded", #topPlayers, "entries")
 	return topPlayers
 end
 
