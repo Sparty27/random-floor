@@ -60,6 +60,8 @@ function PlayerManager.sendToObservation(player)
 		obsSpawn.Position + Vector3.new(math.random(-15, 15), 3, math.random(-15, 15))
 	)
 
+	player:SetAttribute("IsSpectating", true)
+
 	playerEliminated:Fire()
 end
 
@@ -74,6 +76,8 @@ function PlayerManager.sendAllToLobby()
 		humanoidRootPart.CFrame = CFrame.new(
 			obsSpawn.Position + Vector3.new(math.random(-15, 15), 3, math.random(-15, 15))
 		)
+
+		player:SetAttribute("IsSpectating", false)
 	end
 end
 
