@@ -17,6 +17,7 @@ local DEFAULT_DATA = {
 	currentStreak = 0,
 	longestStreak = 0,
 	lastDailyReward = 0,
+	achievements = {},  -- { ["first_win"] = true, ... }
 }
 
 -- Кеш даних гравців (очищається при виході)
@@ -243,10 +244,35 @@ Players.PlayerRemoving:Connect(function(player)
 	cache[player.UserId] = nil
 end)
 
--- Зберігаємо всіх при вимкненні сервера
+-- Зберігаємо всіх при вимкненні сервера (паралельно, чекаємо завершення)
 game:BindToClose(function()
+	local pending = 0
 	for _, player in ipairs(Players:GetPlayers()) do
-		PlayerDataManager.savePlayer(player)
+		pending += 1
+		task.spawn(function()
+			PlayerDataManager.savePlayer(player)
+			pending -= 1
+		end)
+	end
+	while pending > 0 do
+		task.wait(0.1)
+	end
+	print(LOG, "BindToClose: all players saved")
+end)
+
+-- Авто-збереження кожні 5 хвилин (захист від краша)
+task.spawn(function()
+	while true do
+		task.wait(300)
+		local count = 0
+		for _, player in ipairs(Players:GetPlayers()) do
+			PlayerDataManager.savePlayer(player)
+			count += 1
+			task.wait(1)  -- пауза між гравцями щоб не спамити DataStore
+		end
+		if count > 0 then
+			print(LOG, "Auto-save: saved", count, "players")
+		end
 	end
 end)
 

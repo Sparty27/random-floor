@@ -6,6 +6,7 @@ local TileManager = require(game.ServerScriptService:WaitForChild("TileManager")
 local PlayerManager = require(game.ServerScriptService:WaitForChild("PlayerManager"))
 local LeaderboardManager = require(game.ServerScriptService:WaitForChild("LeaderboardManager"))
 local PlayerDataManager = require(game.ServerScriptService:WaitForChild("PlayerDataManager"))
+local AchievementManager = require(game.ServerScriptService:WaitForChild("AchievementManager"))
 
 local gameEvents = ReplicatedStorage:WaitForChild("GameEvents")
 local updateGui = gameEvents:WaitForChild("UpdateGui")
@@ -181,6 +182,8 @@ local function gameLoop()
 		-- Записуємо результат раунду та відправляємо нагороди клієнту
 		for _, player in ipairs(Players:GetPlayers()) do
 			local result = PlayerDataManager.recordRoundResult(player, player == roundWinner)
+			AchievementManager.checkAchievements(player, PlayerDataManager.getData(player))
+			task.spawn(PlayerDataManager.savePlayer, player)
 			if result then
 				showRewards:FireClient(player, result)
 			end
