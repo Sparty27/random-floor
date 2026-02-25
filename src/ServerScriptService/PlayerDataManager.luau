@@ -177,6 +177,34 @@ function PlayerDataManager.recordRoundResult(player, won)
 	return { xp = xpGain, coins = coinsGain, leveledUp = leveledUp, newLevel = data.level }
 end
 
+-- Повертає статистику для клієнта (RemoteFunction)
+function PlayerDataManager.getStatsForClient(player)
+	local data = cache[player.UserId]
+	if not data then return nil end
+
+	-- XP накопичений у межах поточного рівня
+	local xpInLevel = data.xp
+	for lvl = 1, data.level - 1 do
+		xpInLevel -= lvl * 100
+	end
+
+	local winRate = data.gamesPlayed > 0
+		and math.floor(data.wins / data.gamesPlayed * 100)
+		or 0
+
+	return {
+		level          = data.level,
+		xpInLevel      = xpInLevel,
+		xpForNextLevel = data.level * 100,
+		coins          = data.coins,
+		gamesPlayed    = data.gamesPlayed,
+		wins           = data.wins,
+		winRate        = winRate,
+		currentStreak  = data.currentStreak,
+		longestStreak  = data.longestStreak,
+	}
+end
+
 -- Перевіряємо та видаємо щоденну нагороду
 -- Повертає кількість монет (0 якщо вже отримано сьогодні)
 function PlayerDataManager.checkDailyReward(player)

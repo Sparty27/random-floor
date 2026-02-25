@@ -72,7 +72,7 @@ rewardLabel.Name = "RewardLabel"
 rewardLabel.Size = UDim2.new(1, 0, 0, 32)
 rewardLabel.Position = UDim2.fromOffset(0, 42)
 rewardLabel.BackgroundTransparency = 1
-rewardLabel.Text = "+10 XP  |  +5 🪙"
+rewardLabel.Text = "+10 XP  |  +5 💰"
 rewardLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
 rewardLabel.Font = Enum.Font.GothamMedium
 rewardLabel.TextSize = 20
@@ -99,7 +99,7 @@ showRewards.OnClientEvent:Connect(function(result)
 	print(LOG, "ShowRewards received | XP:", result.xp, "Coins:", result.coins, "LevelUp:", result.leveledUp)
 
 	titleLabel.Text = (result.xp >= 35) and "You Won! 🏆" or "Round Complete! 🎮"
-	rewardLabel.Text = "+" .. result.xp .. " XP  |  +" .. result.coins .. " 🪙"
+	rewardLabel.Text = "+" .. result.xp .. " XP  |  +" .. result.coins .. " 💰"
 
 	if result.leveledUp then
 		levelLabel.Text = "★ LEVEL UP → " .. result.newLevel .. "! ★"

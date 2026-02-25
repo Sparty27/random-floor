@@ -18,6 +18,15 @@ local showRewards = Instance.new("RemoteEvent")
 showRewards.Name = "ShowRewards"
 showRewards.Parent = gameEvents
 
+-- RemoteFunction для запиту статистики гравця
+local getPlayerStats = Instance.new("RemoteFunction")
+getPlayerStats.Name = "GetPlayerStats"
+getPlayerStats.Parent = gameEvents
+
+getPlayerStats.OnServerInvoke = function(player)
+	return PlayerDataManager.getStatsForClient(player)
+end
+
 -- Налаштування
 local LOBBY_WAIT = 10
 local REMOVE_INTERVAL = 3
