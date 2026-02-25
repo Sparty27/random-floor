@@ -5,12 +5,18 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TileManager = require(game.ServerScriptService:WaitForChild("TileManager"))
 local PlayerManager = require(game.ServerScriptService:WaitForChild("PlayerManager"))
 local LeaderboardManager = require(game.ServerScriptService:WaitForChild("LeaderboardManager"))
+local PlayerDataManager = require(game.ServerScriptService:WaitForChild("PlayerDataManager"))
 
 local gameEvents = ReplicatedStorage:WaitForChild("GameEvents")
 local updateGui = gameEvents:WaitForChild("UpdateGui")
 local showWinner = gameEvents:WaitForChild("ShowWinner")
 local playerEliminated = game.ServerScriptService:WaitForChild("PlayerEliminated")
 local refreshLeaderboard = game.ServerScriptService:WaitForChild("RefreshLeaderboard")
+
+-- Сервер створює ShowRewards, клієнт знаходить через WaitForChild
+local showRewards = Instance.new("RemoteEvent")
+showRewards.Name = "ShowRewards"
+showRewards.Parent = gameEvents
 
 -- Налаштування
 local LOBBY_WAIT = 10
@@ -26,7 +32,10 @@ local GameState = {
 	PLAYING = "playing",
 	ENDING = "ending",
 }
-local currentState = GameState.LOBBY
+local currentState = GameState.LOBBY -- luau: used for state tracking
+
+-- Переможець поточного раунду (nil = нічия)
+local roundWinner = nil
 
 local function broadcastGui(message)
 	updateGui:FireAllClients(message)
@@ -35,11 +44,12 @@ end
 local function announceWinner(activePlayers)
 	print(LOG, "announceWinner called, activePlayers:", #activePlayers)
 	if #activePlayers == 1 then
-		local name = activePlayers[1].Name
-		print(LOG, "Winner:", name)
-		showWinner:FireAllClients(name)
-		broadcastGui("🏆 " .. name .. " wins!")
-		LeaderboardManager.addWin(activePlayers[1])
+		local winner = activePlayers[1]
+		roundWinner = winner
+		print(LOG, "Winner:", winner.Name)
+		showWinner:FireAllClients(winner.Name)
+		broadcastGui("🏆 " .. winner.Name .. " wins!")
+		LeaderboardManager.addWin(winner)
 		task.wait(1) -- чекаємо поки DataStore збереже
 		refreshLeaderboard:Fire()
 	elseif #activePlayers == 0 then
@@ -158,6 +168,16 @@ local function gameLoop()
 		-- КІНЕЦЬ РАУНДУ
 		print(LOG, "=== ROUND CLEANUP ===")
 		PlayerManager.setGameStarted(false)
+
+		-- Записуємо результат раунду та відправляємо нагороди клієнту
+		for _, player in ipairs(Players:GetPlayers()) do
+			local result = PlayerDataManager.recordRoundResult(player, player == roundWinner)
+			if result then
+				showRewards:FireClient(player, result)
+			end
+		end
+		roundWinner = nil
+
 		PlayerManager.sendAllToLobby()
 
 		for i = LOBBY_WAIT, 1, -1 do
